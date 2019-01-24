@@ -9,16 +9,12 @@ SECTIONS {
   
   .rodata : {
     . = ALIGN(4);
-    rodata_start = .;
     *(.rodata .rodata.*)
-    rodata_end = .;
   }
 
   .data : {
     . = ALIGN(4);
-     data_start = .;
     *(.data .data.*)
-     data_end = .;
   }
 
   .bss : {
