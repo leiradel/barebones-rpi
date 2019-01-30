@@ -39,8 +39,4 @@ $(TARGET).img: $(OBJS)
 clean:
 	rm -f $(TARGET).elf $(TARGET).map $(TARGET).lst $(TARGET).img $(OBJS)
 
-copy:
-	cp kernel.img /media/leiradel/6722-C128/
-	-eject /media/leiradel/6722-C128/
-
-.PHONY: clean copy
+.PHONY: clean
