@@ -8,7 +8,7 @@ CPPFILT = $(PREFIX)c++filt
 
 CFLAGS   = -fsigned-char -ffreestanding -nostdinc -std=c99
 INCLUDES = -I.
-DEFINES  = -DARMV6=1
+DEFINES  =
 LDFLAGS  = -T link.T
 
 CFLAGS += -march=armv6k -mtune=arm1176jzf-s -marm -mfpu=vfp -mfloat-abi=hard
