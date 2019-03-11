@@ -212,6 +212,6 @@ void __attribute__((section(".kmain"), naked)) kmain(
 
   // Do *not* return! No, really!
   while (1) {
-    __asm volatile("");
+    // Empty.
   }
 }

@@ -76,7 +76,7 @@ void gpio_set(const unsigned pin, const int high) {
 static void wait(unsigned count) {
   // Spend CPU cycles.
   while (count-- != 0) {
-    __asm volatile("");
+    // Empty.
   }
 }
 

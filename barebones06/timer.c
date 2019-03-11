@@ -34,6 +34,6 @@ uint64_t timer(void) {
 
 void timer_waituntil(const uint64_t t1) {
   while (timer() < t1) {
-    __asm volatile("");
+    // Empty.
   }
 }
