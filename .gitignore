@@ -76,3 +76,6 @@ dkms.conf
 # RPi Kernel
 *.img
 *.lst
+
+# VSCode
+.vscode/
