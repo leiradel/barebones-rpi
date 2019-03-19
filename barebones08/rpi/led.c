@@ -4,17 +4,17 @@
 #include "mbox.h"
 #include "timer.h"
 
-void (*led_set)(const int on) = 0;
+void (*led_set)(int const on) = 0;
 
-static void set_16_inv(const int on) {
+static void set_16_inv(int const on) {
   gpio_set(16, !on);
 }
 
-static void set_47_inv(const int on) {
+static void set_47_inv(int const on) {
   gpio_set(47, !on);
 }
 
-static void set_130(const int on) {
+static void set_130(int const on) {
   typedef struct {
     mbox_msgheader_t header;
     mbox_tagheader_t tag;
@@ -33,35 +33,35 @@ static void set_130(const int on) {
   }
   message_t;
 
-  message_t msg __attribute__((aligned(16)));
-
-  msg.header.size = sizeof(msg);
-  msg.header.code = 0;
-  msg.tag.id = UINT32_C(0x00038041);
-  msg.tag.size = sizeof(msg.value);
-  msg.tag.code = 0;
-  msg.value.request.pin = 130;
-  msg.value.request.value = !!on;
-  msg.footer.end = 0;
+  message_t msg __attribute__((aligned(16))) = {
+    .header.size = sizeof(msg),
+    .header.code = 0,
+    .tag.id = UINT32_C(0x00038041),
+    .tag.size = sizeof(msg.value),
+    .tag.code = 0,
+    .value.request.pin = 130,
+    .value.request.value = !!on,
+    .footer.end = 0
+  };
 
   mbox_send(&msg);
 }
 
-static void set_29(const int on) {
+static void set_29(int const on) {
   gpio_set(29, on);
 }
 
-static void set_none(const int on) {
+static void set_none(int const on) {
   (void)on;
 }
 
-static void set_47(const int on) {
+static void set_47(int const on) {
   gpio_set(47, on);
 }
 
 int led_init(void) {
-  const uint32_t revision = prop_revision();
-  const board_t board = board_info(revision);
+  uint32_t const revision = prop_revision();
+  board_t  const board    = board_info(revision);
 
   if (board.model == BOARD_MODEL_A || board.model == BOARD_MODEL_B) {
     gpio_select(16, GPIO_OUTPUT);
@@ -99,7 +99,7 @@ int led_init(void) {
   return 0;
 }
 
-void led_blink(const unsigned number, const unsigned repeats)
+void led_blink(unsigned const number, unsigned const repeats)
 {
   uint64_t time = timer();
 

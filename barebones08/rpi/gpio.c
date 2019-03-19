@@ -36,32 +36,36 @@
 // The GPIO base displacement from the base IO address.
 #define BASE_ADDR (g_baseio + UINT32_C(0x00200000))
 
-void gpio_select(const unsigned pin, const gpio_function_t mode) {
+void gpio_select(unsigned const pin, gpio_function_t const mode) {
   // The register index starting at GPFSEL0.
-  const unsigned index = (pin * 0xcdU) >> 11;
+  unsigned const index = (pin * 0xcdU) >> 11;
   // Amount to shift to get to the required pin bits.
-  const unsigned shift = (pin - index * 10) * 3;
+  unsigned const shift = (pin - index * 10) * 3;
 
   // Calculate the GPFSEL register that contains the configuration for
   // the pin.
-  const uint32_t gpfsel = BASE_ADDR + GPFSEL0 + index * 4;
+  uint32_t const gpfsel = BASE_ADDR + GPFSEL0 + index * 4;
 
   // Read the register.
-  const uint32_t value = mem_read32(gpfsel);
+  uint32_t const value = mem_read32(gpfsel);
+
+  mem_dmb();
 
   // Set the desired function for the pin.
-  const uint32_t masked = value & ~(UINT32_C(7) << shift);
-  const uint32_t fsel = masked | mode << shift;
+  uint32_t const masked = value & ~(UINT32_C(7) << shift);
+  uint32_t const fsel   = masked | mode << shift;
 
   // Write the value back to the register.
   mem_write32(gpfsel, fsel);
 }
 
-void gpio_set(const unsigned pin, const int high) {
+void gpio_set(unsigned const pin, int const high) {
   // The register index starting at GPSET0 or GPCLR0.
-  const unsigned index = pin >> 5;
+  unsigned const index = pin >> 5;
   // The bit in the registers to set or clear the pin.
-  const uint32_t bit = UINT32_C(1) << (pin & 31);
+  uint32_t const bit = UINT32_C(1) << (pin & 31);
+
+  mem_dmb();
 
   if (high) {
     // Write the bit to GPSEL to set the pin high.
@@ -76,13 +80,15 @@ void gpio_set(const unsigned pin, const int high) {
 static void wait(unsigned count) {
   // Spend CPU cycles.
   while (count-- != 0) {
-    __asm volatile("");
+    // Empty.
   }
 }
 
-void gpio_setpull(const unsigned pin, const gpio_pull_t pull) {
-  const unsigned index = pin >> 5;
-  const uint32_t bit = UINT32_C(1) << (pin & 31);
+void gpio_setpull(unsigned const pin, gpio_pull_t const pull) {
+  unsigned const index = pin >> 5;
+  uint32_t const bit   = UINT32_C(1) << (pin & 31);
+
+  mem_dmb();
 
   // Set GPPUD to the desired pull up/down.
   mem_write32(BASE_ADDR + GPPUD, pull);
@@ -90,7 +96,7 @@ void gpio_setpull(const unsigned pin, const gpio_pull_t pull) {
   wait(150);
 
   // Evaluate which GPPUDCLK register is needed.
-  const uint32_t gppudclk = BASE_ADDR + (index == 0 ? GPPUDCLK0 : GPPUDCLK1);
+  uint32_t const gppudclk = BASE_ADDR + (index == 0 ? GPPUDCLK0 : GPPUDCLK1);
 
   // Set the pin bit in GPPUDCLK.
   mem_write32(gppudclk, bit);

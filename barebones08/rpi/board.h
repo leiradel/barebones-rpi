@@ -47,12 +47,12 @@ typedef struct {
 }
 board_t;
 
-board_t board_info(const uint32_t revision);
+board_t board_info(uint32_t const revision);
 
 #ifdef BOARD_STRINGS
-const char* board_model(const board_model_t model);
-const char* board_processor(const board_processor_t processor);
-const char* board_manufacturer(const board_manufacturer_t manufacturer);
+const char* board_model(board_model_t const model);
+const char* board_processor(board_processor_t const processor);
+const char* board_manufacturer(board_manufacturer_t const manufacturer);
 #endif /* BOARD_STRINGS */
 
 #endif /* BOARD_H__ */

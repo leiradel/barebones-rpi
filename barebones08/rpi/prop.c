@@ -21,14 +21,14 @@ uint32_t prop_revision(void) {
   }
   message_t;
 
-  message_t msg __attribute__((aligned(16)));
-
-  msg.header.size = sizeof(msg);
-  msg.header.code = 0;
-  msg.tag.id = UINT32_C(0x00010002); // Get board revision.
-  msg.tag.size = sizeof(msg.value);
-  msg.tag.code = 0;
-  msg.footer.end = 0;
+  message_t msg __attribute__((aligned(16))) = {
+    .header.size = sizeof(msg),
+    .header.code = 0,
+    .tag.id = UINT32_C(0x00010002), // Get board revision.
+    .tag.size = sizeof(msg.value),
+    .tag.code = 0,
+    .footer.end = 0
+  };
 
   if (mbox_send(&msg) != 0) {
     return 0;
@@ -55,14 +55,14 @@ uint32_t prop_fwrev(void) {
   }
   message_t;
 
-  message_t msg __attribute__((aligned(16)));
-
-  msg.header.size = sizeof(msg);
-  msg.header.code = 0;
-  msg.tag.id = UINT32_C(0x00000001); // Get firmware revision.
-  msg.tag.size = sizeof(msg.value);
-  msg.tag.code = 0;
-  msg.footer.end = 0;
+  message_t msg __attribute__((aligned(16))) = {
+    .header.size = sizeof(msg),
+    .header.code = 0,
+    .tag.id = UINT32_C(0x00000001), // Get firmware revision.
+    .tag.size = sizeof(msg.value),
+    .tag.code = 0,
+    .footer.end = 0
+  };
 
   if (mbox_send(&msg) != 0) {
     return 0;
@@ -89,14 +89,14 @@ uint32_t prop_model(void) {
   }
   message_t;
 
-  message_t msg __attribute__((aligned(16)));
-
-  msg.header.size = sizeof(msg);
-  msg.header.code = 0;
-  msg.tag.id = UINT32_C(0x00010001); // Get board model.
-  msg.tag.size = sizeof(msg.value);
-  msg.tag.code = 0;
-  msg.footer.end = 0;
+  message_t msg __attribute__((aligned(16))) = {
+    .header.size = sizeof(msg),
+    .header.code = 0,
+    .tag.id = UINT32_C(0x00010001), // Get board model.
+    .tag.size = sizeof(msg.value),
+    .tag.code = 0,
+    .footer.end = 0
+  };
 
   if (mbox_send(&msg) != 0) {
     return 0;
@@ -124,14 +124,14 @@ uint64_t prop_macaddr(void) {
   }
   message_t;
 
-  message_t msg __attribute__((aligned(16)));
-
-  msg.header.size = sizeof(msg);
-  msg.header.code = 0;
-  msg.tag.id = UINT32_C(0x00010003); // Get board MAC address.
-  msg.tag.size = sizeof(msg.value);
-  msg.tag.code = 0;
-  msg.footer.end = 0;
+  message_t msg __attribute__((aligned(16))) = {
+    .header.size = sizeof(msg),
+    .header.code = 0,
+    .tag.id = UINT32_C(0x00010003), // Get board MAC address.
+    .tag.size = sizeof(msg.value),
+    .tag.code = 0,
+    .footer.end = 0
+  };
 
   if (mbox_send(&msg) != 0) {
     return 0;
@@ -163,14 +163,14 @@ uint64_t prop_serial(void) {
   }
   message_t;
 
-  message_t msg __attribute__((aligned(16)));
-
-  msg.header.size = sizeof(msg);
-  msg.header.code = 0;
-  msg.tag.id = UINT32_C(0x00010004); // Get board serial.
-  msg.tag.size = sizeof(msg.value);
-  msg.tag.code = 0;
-  msg.footer.end = 0;
+  message_t msg __attribute__((aligned(16))) = {
+    .header.size = sizeof(msg),
+    .header.code = 0,
+    .tag.id = UINT32_C(0x00010004), // Get board serial.
+    .tag.size = sizeof(msg.value),
+    .tag.code = 0,
+    .footer.end = 0
+  };
 
   if (mbox_send(&msg) != 0) {
     return 0;
@@ -198,14 +198,14 @@ memrange_t prop_armmemory(void) {
   }
   message_t;
 
-  message_t msg __attribute__((aligned(16)));
-
-  msg.header.size = sizeof(msg);
-  msg.header.code = 0;
-  msg.tag.id = UINT32_C(0x00010005); // Get ARM memory.
-  msg.tag.size = sizeof(msg.value);
-  msg.tag.code = 0;
-  msg.footer.end = 0;
+  message_t msg __attribute__((aligned(16))) = {
+    .header.size = sizeof(msg),
+    .header.code = 0,
+    .tag.id = UINT32_C(0x00010005), // Get ARM memory.
+    .tag.size = sizeof(msg.value),
+    .tag.code = 0,
+    .footer.end = 0
+  };
 
   memrange_t range;
 
@@ -239,14 +239,14 @@ memrange_t prop_vcmemory(void) {
   }
   message_t;
 
-  message_t msg __attribute__((aligned(16)));
-
-  msg.header.size = sizeof(msg);
-  msg.header.code = 0;
-  msg.tag.id = UINT32_C(0x00010006); // Get VC memory.
-  msg.tag.size = sizeof(msg.value);
-  msg.tag.code = 0;
-  msg.footer.end = 0;
+  message_t msg __attribute__((aligned(16))) = {
+    .header.size = sizeof(msg),
+    .header.code = 0,
+    .tag.id = UINT32_C(0x00010006), // Get VC memory.
+    .tag.size = sizeof(msg.value),
+    .tag.code = 0,
+    .footer.end = 0
+  };
 
   memrange_t range;
 
@@ -279,17 +279,14 @@ int prop_cmdline(char cmdline[static 256]) {
   }
   message_t;
 
-  message_t msg __attribute__((aligned(16)));
-  const uint32_t* source;
-  uint32_t* dest;
-  unsigned i;
-
-  msg.header.size = sizeof(msg);
-  msg.header.code = 0;
-  msg.tag.id = UINT32_C(0x00050001); // Get command line.
-  msg.tag.size = sizeof(msg.value);
-  msg.tag.code = 0;
-  msg.footer.end = 0;
+  message_t msg __attribute__((aligned(16))) = {
+    .header.size = sizeof(msg),
+    .header.code = 0,
+    .tag.id = UINT32_C(0x00050001), // Get command line.
+    .tag.size = sizeof(msg.value),
+    .tag.code = 0,
+    .footer.end = 0
+  };
 
   if (mbox_send(&msg) != 0) {
     return -1;
@@ -302,17 +299,17 @@ int prop_cmdline(char cmdline[static 256]) {
     msg.value.response.cmdline[255] = 0;
   }
 
-  source = (uint32_t*)msg.value.response.cmdline;
-  dest = (uint32_t*)cmdline;
+  const uint32_t* source = (uint32_t*)msg.value.response.cmdline;
+  uint32_t* dest = (uint32_t*)cmdline;
 
-  for (i = 0; i < 256; i += 4) {
+  for (unsigned i = 0; i < 256; i += 4) {
     *dest++ = *source++;
   }
 
   return 0;
 }
 
-static uint32_t getclockrate(const uint32_t clock_id, const uint32_t tag_id) {
+static uint32_t getclockrate(uint32_t const clock_id, uint32_t const tag_id) {
   typedef struct {
     mbox_msgheader_t header;
     mbox_tagheader_t tag;
@@ -335,15 +332,15 @@ static uint32_t getclockrate(const uint32_t clock_id, const uint32_t tag_id) {
   }
   message_t;
 
-  message_t msg __attribute__((aligned(16)));
-
-  msg.header.size = sizeof(msg);
-  msg.header.code = 0;
-  msg.tag.id = tag_id;
-  msg.tag.size = sizeof(msg.value);
-  msg.tag.code = 0;
-  msg.value.request.clock_id = clock_id;
-  msg.footer.end = 0;
+  message_t msg __attribute__((aligned(16))) = {
+    .header.size = sizeof(msg),
+    .header.code = 0,
+    .tag.id = tag_id,
+    .tag.size = sizeof(msg.value),
+    .tag.code = 0,
+    .value.request.clock_id = clock_id,
+    .footer.end = 0
+  };
 
   if (mbox_send(&msg) != 0) {
     return 0;
@@ -352,14 +349,14 @@ static uint32_t getclockrate(const uint32_t clock_id, const uint32_t tag_id) {
   return msg.value.response.rate;
 }
 
-uint32_t prop_getclockrate(const uint32_t clock_id) {
+uint32_t prop_getclockrate(uint32_t const clock_id) {
   return getclockrate(clock_id, UINT32_C(0x00030002));
 }
 
-uint32_t prop_getminclockrate(const uint32_t clock_id) {
+uint32_t prop_getminclockrate(uint32_t const clock_id) {
   return getclockrate(clock_id, UINT32_C(0x00030007));
 }
 
-uint32_t prop_getmaxclockrate(const uint32_t clock_id) {
+uint32_t prop_getmaxclockrate(uint32_t const clock_id) {
   return getclockrate(clock_id, UINT32_C(0x00030004));
 }

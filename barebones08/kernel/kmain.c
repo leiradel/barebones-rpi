@@ -1,27 +1,15 @@
-#include "armregs.h"
+#include "arm.h"
 #include "memio.h"
 #include "led.h"
 #include "glod.h"
 
 #include <stdint.h>
 
-// 16 KB space to setup our initial stack.
-static uint64_t svc_stack[2048] __attribute__((aligned(8)));
-
-// 256 bytes stacks for fatal exceptions.
-static uint64_t glod_stack[32] __attribute__((aligned(8)));
-
-// 256 bytes stacks for IRQ.
-static uint64_t irq_stack[32] __attribute__((aligned(8)));
-
-// 256 bytes stacks for FIQ.
-static uint64_t fiq_stack[32] __attribute__((aligned(8)));
-
 // Zero the .bss section.
 static void zero_bss(const uint32_t zero) {
-  extern uint32_t bss_start, bss_end;
+  extern uint32_t __bss_start, __bss_end;
 
-  for (uint32_t* i = &bss_start; i < &bss_end; i++) {
+  for (uint32_t* i = &__bss_start; i < &__bss_end; i++) {
     *i = zero;
   }
 }
@@ -68,6 +56,7 @@ static void enter_svc_mode(void) {
   }
 }
 
+#if 0
 /*
 Turn on L1 data and instruction caches, and branch prediction flags in the
 Control Register.
@@ -76,6 +65,7 @@ static void enable_l1_and_branch(void) {
   const uint32_t sctlr = get_sctlr();
   set_sctlr(sctlr | SCTLR_C | SCTLR_I | SCTLR_Z);
 }
+#endif
 
 /*
 Enable CP10 and CP11 in both secure and non-secore modes, and in both
@@ -106,21 +96,23 @@ static void setup_stacks(void) {
   // Set up the exception stacks.
   const uint32_t cpsr = get_cpsr();
 
+  uint32_t sp = 64; // Skip interrupt vector.
+
   const uint32_t und_mode = (cpsr & ~CPSR_M) | CPSR_M_UND;
   set_cpsr(und_mode);
-  set_sp((uint32_t)((uint8_t*)glod_stack + sizeof(glod_stack)));
+  set_sp(sp += 256);
 
   const uint32_t abt_mode = (cpsr & ~CPSR_M) | CPSR_M_ABT;
   set_cpsr(abt_mode);
-  set_sp((uint32_t)((uint8_t*)glod_stack + sizeof(glod_stack)));
+  set_sp(sp += 256);
 
   const uint32_t irq_mode = (cpsr & ~CPSR_M) | CPSR_M_IRQ;
   set_cpsr(irq_mode);
-  set_sp((uint32_t)((uint8_t*)irq_stack + sizeof(irq_stack)));
+  set_sp(sp += 256);
 
   const uint32_t fiq_mode = (cpsr & ~CPSR_M) | CPSR_M_FIQ;
   set_cpsr(fiq_mode);
-  set_sp((uint32_t)((uint8_t*)fiq_stack + sizeof(fiq_stack)));
+  set_sp(sp += 256);
 
   // Go back to the previous mode.
   set_cpsr(cpsr);
@@ -138,49 +130,43 @@ static void setup_isr_table(void) {
     *isr++ = UINT32_C(0xe59ff018); // ldr pc, [pc, #24]
   }
 
-  extern void res_handler(void);
-  extern void und_handler(void);
-  extern void swi_handler(void);
-  extern void pre_handler(void);
-  extern void abt_handler(void);
-  extern void rsr_handler(void);
-  extern void irq_handler(void);
-  extern void fiq_handler(void);
+  extern void isr_reshandler(void);
+  extern void isr_undhandler(void);
+  extern void isr_swihandler(void);
+  extern void isr_prehandler(void);
+  extern void isr_abthandler(void);
+  extern void isr_irqhandler(void);
+  extern void isr_fiqhandler(void);
 
-  *isr++ = (uint32_t)res_handler;
-  *isr++ = (uint32_t)und_handler;
-  *isr++ = (uint32_t)swi_handler;
-  *isr++ = (uint32_t)pre_handler;
-  *isr++ = (uint32_t)abt_handler;
-  *isr++ = (uint32_t)rsr_handler; // unused
-  *isr++ = (uint32_t)irq_handler;
-  *isr   = (uint32_t)fiq_handler;
+  *isr++ = (uint32_t)isr_reshandler;
+  *isr++ = (uint32_t)isr_undhandler;
+  *isr++ = (uint32_t)isr_swihandler;
+  *isr++ = (uint32_t)isr_prehandler;
+  *isr++ = (uint32_t)isr_abthandler;
+  *isr++ = 0; // unused
+  *isr++ = (uint32_t)isr_irqhandler;
+  *isr   = (uint32_t)isr_fiqhandler;
 }
 
 /*
 This function is a regular C function with a  working function frame, so we
 can write regular C code here without fear of touching the stack.
 */
-static void __attribute__((noinline)) start(
-  const uint32_t zero,
-  const uint32_t machine_type,
-  const uint32_t atags_addr) {
-
+static uint32_t __attribute__((noinline)) start(const uint32_t zero) {
   zero_bss(zero);
   enter_svc_mode();
-  enable_l1_and_branch();
+  //enable_l1_and_branch();
   enable_vfp();
   setup_isr_table();
   setup_stacks();
+  enable_irq();
 
   memio_init();
   led_init();
 
-  extern void main(const uint32_t, const uint32_t);
-  main(machine_type, atags_addr);
-
-  // Do *not* return!
-  glod(GLOD_EXITED);
+  extern void main(void);
+  main();
+  return 0;
 }
 
 /*
@@ -194,7 +180,7 @@ https://github.com/torvalds/linux/blob/master/Documentation/arm/Booting
 
 HACK! This function is naked, so we shouldn't write C code here. gcc generates
 code that works just fine in this case because we only receive parameters via
-register r0-r2 and don't create too much automatic variables, much being an
+register r0-r2 and don't create too much automatic variables, "much" being an
 unknown quantity which depends on many things that we don't control. However,
 lets *not* push it and keep this code as lean as possible. Also, always look
 to kernel.lst and make sure the generated code is sane.
@@ -203,15 +189,13 @@ void __attribute__((section(".kmain"), naked)) kmain(
   const uint32_t zero,
   const uint32_t machine_type,
   const uint32_t atags_addr) {
-
-  // Set the stack pointer to just below our kernel.
-  set_sp((uint32_t)((uint8_t*)svc_stack + sizeof(svc_stack)));
-
+  
+  (void)machine_type;
+  (void)atags_addr;
+  
   // Call start with the CPU ID and the other parameters passed from the stub.
-  start(zero, machine_type, atags_addr);
+  run_with_sp((uint32_t)start, 0x8000, zero);
 
-  // Do *not* return! No, really!
-  while (1) {
-    __asm volatile("");
-  }
+  // Do *not* return!
+  glod(GLOD_EXITED);
 }

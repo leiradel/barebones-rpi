@@ -19,28 +19,42 @@
 #define BASE_ADDR (g_baseio + UINT32_C(0x0000b880))
 
 int mbox_send(void* msg) {
-  uint32_t value;
+  // Wait for the mailbox to become empty.
+  while (1) {
+    uint32_t const value = mem_read32(BASE_ADDR + STATUS1);
 
-  // Write message to mailbox.
-  do {
-    value = mem_read32(BASE_ADDR + STATUS1);
+    if ((value & UINT32_C(0x80000000)) == 0) {
+      // Mailbox empty, exit loop.
+      break;
+    }
   }
-  while ((value & UINT32_C(0x80000000)) != 0); // Mailbox full, retry.
+
+  mem_dmb();
 
   // Send message to channel 8: tags (ARM to VC).
-  const uint32_t msgaddr = (mem_arm2vc((uint32_t)msg) & ~15) | TAGS;
+  uint32_t const msgaddr = (mem_arm2vc((uint32_t)msg) & ~15) | TAGS;
   mem_write32(BASE_ADDR + WRITE1, msgaddr);
 
   // Wait for the response.
-  do {
-    do {
-      value = mem_read32(BASE_ADDR + STATUS0);
+  while (1) {
+    while (1) {
+      uint32_t const value = mem_read32(BASE_ADDR + STATUS0);
+      
+      if ((value & UINT32_C(0x40000000)) == 0) {
+        // Response arrived, exit loop.
+        break;
+      }
     }
-    while ((value & UINT32_C(0x40000000)) != 0); // Mailbox empty, retry.
 
-    value = mem_read32(BASE_ADDR + READ0);
+    uint32_t const value = mem_read32(BASE_ADDR + READ0);
+
+    if ((value & 15) == TAGS) {
+      // Correct channel, exit loop.
+      break;
+    }
   }
-  while ((value & 15) != TAGS); // Wrong channel, retry.
+
+  mem_dmb();
 
   if (((mbox_msgheader_t*)msg)->code == UINT32_C(0x80000000)) {
     return 0; // Success!

@@ -8,7 +8,10 @@ CPPFILT = $(PREFIX)c++filt
 
 RPI = ../rpi
 
-CFLAGS  = -fsigned-char -ffreestanding -nostdinc -std=c99 -I$(RPI) -I../include/common
+CFLAGS  = -fsigned-char -ffreestanding -nostdinc \
+          -std=c99 -Wall -pedantic -Werror \
+          -I. -I$(RPI) -I../include/common -Ilua-5.3.5/src
+
 DEFINES = -DBOARD_STRINGS
 LDFLAGS = -T link.T
 
@@ -32,7 +35,7 @@ endif
 ifneq ($(DEBUG),)
   CFLAGS += -O0 -g
 else
-  CFLAGS += -Os -DNDEBUG
+  CFLAGS += -O3 -DNDEBUG
 endif
 
 %.o: %.c
@@ -41,14 +44,14 @@ endif
 %.o: %.S
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -c $< -o $@
 
-OBJS = kmain.o glod.o irq.o main.o \
+OBJS = kmain.o glod.o isr.o syscalls.o tty.o main.o \
        $(RPI)/aux.o $(RPI)/board.o $(RPI)/gpio.o $(RPI)/led.o \
        $(RPI)/mbox.o $(RPI)/memio.o $(RPI)/prop.o $(RPI)/timer.o
 
 all: $(TARGET).img
 
 $(TARGET).img: $(OBJS)
-	$(LD) -o $(TARGET).elf -Map $(TARGET).map $(LDFLAGS) $(OBJS) -lrt
+	$(LD) -o $(TARGET).elf -Map $(TARGET).map $(LDFLAGS) $(OBJS) -lrt -lc -lm
 	$(OBJDUMP) -d $(TARGET).elf | $(CPPFILT) > $(TARGET).lst
 	$(OBJCOPY) $(TARGET).elf -O binary $@
 	wc -c $@

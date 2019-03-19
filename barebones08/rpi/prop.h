@@ -28,8 +28,8 @@ uint64_t   prop_serial(void);
 memrange_t prop_armmemory(void);
 memrange_t prop_vcmemory(void);
 int        prop_cmdline(char cmdline[static 256]);
-uint32_t   prop_getclockrate(const uint32_t clock_id);
-uint32_t   prop_getminclockrate(const uint32_t clock_id);
-uint32_t   prop_getmaxclockrate(const uint32_t clock_id);
+uint32_t   prop_getclockrate(uint32_t const clock_id);
+uint32_t   prop_getminclockrate(uint32_t const clock_id);
+uint32_t   prop_getmaxclockrate(uint32_t const clock_id);
 
 #endif /* PROP_H__ */

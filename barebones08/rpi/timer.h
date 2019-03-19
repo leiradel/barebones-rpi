@@ -7,6 +7,6 @@ uint32_t timer_high(void);
 uint32_t timer_low(void);
 uint64_t timer(void);
 
-void timer_waituntil(const uint64_t t1);
+void timer_waituntil(uint64_t const t1);
 
 #endif /* TIMER_H__ */

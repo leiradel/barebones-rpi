@@ -1,5 +1,5 @@
-#ifndef ARMREGS_H__
-#define ARMREGS_H__
+#ifndef ARM_H__
+#define ARM_H__
 
 #include <stdint.h>
 
@@ -161,7 +161,7 @@ inline uint32_t get_sctlr(void) {
   return x;
 }
 
-inline void set_sctlr(const uint32_t x) {
+inline void set_sctlr(uint32_t const x) {
   __asm volatile("mcr p15, 0, %[value], c1, c0, #0\n" : : [value] "r" (x));
 }
 
@@ -178,8 +178,42 @@ inline void set_sctlr(const uint32_t x) {
 #define FPEXC_EN     (UINT32_C(1)   << 30)
 #define FPEXC_EX     (UINT32_C(1)   << 31)
 
-inline void set_fpexc(const uint32_t x) {
+inline void set_fpexc(uint32_t const x) {
   __asm volatile("vmsr fpexc, %[value]\n" : : [value] "r" (x));
 }
 
-#endif /* ARMREGS_H__ */
+/****************************************************************************\
+| Misc                                                                       |
+\****************************************************************************/
+
+inline void enable_irq(void) {
+  __asm volatile("cpsie i\n");
+}
+
+inline void disable_irq(void) {
+  __asm volatile("cpsid i\n");
+}
+
+inline uint32_t run_with_sp(
+  uint32_t const address, uint32_t const sp, uint32_t const args) {
+
+  uint32_t result;
+
+  __asm volatile(
+    "mov r0, %[args]\n"
+    "mov r4, sp\n"
+    "mov sp, %[sp]\n"
+    "blx %[address]\n"
+    "mov %[result], r0\n"
+    "mov sp, r4\n"
+    : [result] "=r" (result)
+    : [address] "r" (address)
+    , [sp] "r" (sp)
+    , [args] "r" (args)
+    : "r0", "r4", "lr", "cc"
+  );
+
+  return result;
+}
+
+#endif /* ARM_H__ */

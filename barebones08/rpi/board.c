@@ -3,8 +3,9 @@
 #include <stddef.h>
 
 // https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md
-board_t board_info(const uint32_t revision) {
-  static const board_t boards[] = {
+// Board 15 can have either 256 or 512 MB.
+board_t board_info(uint32_t const revision) {
+  static board_t const boards[] = {
     /* 0002 */ {BOARD_MODEL_B, BOARD_PROCESSOR_BCM2835,
                 1, 0, 256, BOARD_MANUFACTURER_EGOMAN},
     /* 0003 */ {BOARD_MODEL_B, BOARD_PROCESSOR_BCM2835,
@@ -68,28 +69,30 @@ board_t board_info(const uint32_t revision) {
 }
 
 #ifdef BOARD_STRINGS
-const char* board_model(const board_model_t model) {
-  static const char const* models[] = {
-    "A", "B", "A+", "B+", "2B", "Alpha", "CM1", NULL,
-    "3B", "Zero", "CM3", NULL, "Zero W", "3B+", "3A+"
+
+const char* board_model(board_model_t const model) {
+  static const char* const models[] = {
+    "A",  "B",    "A+",  "B+", "2B",     "Alpha", "CM1", NULL,
+    "3B", "Zero", "CM3", NULL, "Zero W", "3B+",   "3A+"
   };
 
   return models[model];
 }
 
-const char* board_processor(const board_processor_t processor) {
-  static const char const* processors[] = {
+const char* board_processor(board_processor_t const processor) {
+  static const char* const processors[] = {
     "BCM2835", "BCM2836", "BCM2837"
   };
 
   return processors[processor];
 }
 
-const char* board_manufacturer(const board_manufacturer_t manufacturer) {
-  static const char const* manufacturers[] = {
+const char* board_manufacturer(board_manufacturer_t const manufacturer) {
+  static const char* const manufacturers[] = {
     "Qisda", "Sony UK", "Egoman", "Embest", "Sony Japan", NULL, "Stadium"
   };
 
   return manufacturers[manufacturer + 1];
 }
+
 #endif /* BOARD_STRINGS */

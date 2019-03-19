@@ -2,7 +2,7 @@
 #include "led.h"
 #include "timer.h"
 
-void glod(const uint32_t code) {
+void glod(uint32_t const code) {
 #ifdef GLOD_MORSE_CODE
   uint64_t time = timer();
   led_set(0);
@@ -11,7 +11,7 @@ void glod(const uint32_t code) {
     uint32_t pattern = code;
 
     for (unsigned i = 0; i < 16; i++, pattern >>= 2) {
-      const unsigned code = pattern & 3;
+      unsigned const code = pattern & 3;
 
       switch (code) {
         case 0: /* end of sequence */

@@ -9,17 +9,16 @@
 #define GLOD_PREFETCH  0x0006767dU /* PRE .--.  .-.  .   */
 #define GLOD_ABORT     0x003f95edU /* ABO .-  -...  ---  */
 #define GLOD_EXITED    0x00016d79U /* EXI .  -..-  ..    */
-#define GLOD_RESERVED  0x00ded675U /* FUK ..-.  ..-  -.- */
 #else
 /* don't blink only once to avoid confusing people counting the blinks */
 #define GLOD_RESET     2
 #define GLOD_UNDEFINED 3
-#define GLOD_PREFETCH  4
-#define GLOD_ABORT     5
-#define GLOD_EXITED    6
-#define GLOD_RESERVED  7 /* should never happen */
+#define GLOD_SOFTWARE  4
+#define GLOD_PREFETCH  5
+#define GLOD_ABORT     6
+#define GLOD_EXITED    7
 #endif
 
-void glod(const uint32_t code);
+void glod(uint32_t const code);
 
 #endif /* GLOD_H__ */

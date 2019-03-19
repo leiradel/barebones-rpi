@@ -19,11 +19,11 @@ SECTIONS {
 
   .bss : {
     . = ALIGN(4);
-    bss_start = .;
+    __bss_start = .;
     *(.bss .bss.*)
     *(COMMON)
     . = ALIGN(4);
-    bss_end = .;
+    __bss_end = .;
   }
 
   . = ALIGN(16);

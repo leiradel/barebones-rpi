@@ -8,7 +8,10 @@ CPPFILT = $(PREFIX)c++filt
 
 RPI = ../rpi
 
-CFLAGS  = -fsigned-char -ffreestanding -nostdinc -std=c99 -I$(RPI) -I../include/common
+CFLAGS  = -fsigned-char -ffreestanding -nostdinc \
+          -std=c99 -Wall -pedantic -Werror \
+          -I. -I$(RPI) -I../include/common -Ilua-5.3.5/src
+
 DEFINES = -DBOARD_STRINGS
 LDFLAGS = -T link.T
 
@@ -32,18 +35,14 @@ endif
 ifneq ($(DEBUG),)
   CFLAGS += -O0 -g
 else
-  CFLAGS += -Os -DNDEBUG
+  CFLAGS += -O3 -DNDEBUG
 endif
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -c $< -o $@
 
-%.o: %.S
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -c $< -o $@
-
-OBJS = main.o syscalls.o \
-       $(RPI)/aux.o $(RPI)/board.o $(RPI)/gpio.o $(RPI)/led.o \
-       $(RPI)/mbox.o $(RPI)/memio.o $(RPI)/prop.o $(RPI)/timer.o
+OBJS = main.o syscalls.o crt0.o \
+       $(RPI)/board.o $(RPI)/mbox.o $(RPI)/memio.o $(RPI)/prop.o $(RPI)/timer.o
 
 all: $(TARGET).ihex
 

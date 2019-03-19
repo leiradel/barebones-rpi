@@ -20,8 +20,8 @@ typedef enum {
 }
 gpio_pull_t;
 
-void gpio_select(const unsigned pin, const gpio_function_t mode);
-void gpio_set(const unsigned pin, const int high);
-void gpio_setpull(const unsigned pin, const gpio_pull_t pull);
+void gpio_select(unsigned const pin, gpio_function_t const mode);
+void gpio_set(unsigned const pin, int const high);
+void gpio_setpull(unsigned const pin, gpio_pull_t const pull);
 
 #endif /* GPIO_H__ */
