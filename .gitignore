@@ -73,9 +73,10 @@ dkms.conf
 
 # End of https://www.gitignore.io/api/c,linux
 
-# RPi Kernel
+# RPi Kernel and applications
 *.img
 *.lst
+*.ihex
 
 # VSCode
 .vscode/
