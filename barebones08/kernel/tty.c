@@ -38,8 +38,8 @@ static void newchar(uint8_t const k) {
 }
 
 void tty_init(void) {
-  uart_init(115200, newchar);
   s_head = s_tail = 0;
+  uart_init(115200, newchar);
 }
 
 int tty_canread(void) {
