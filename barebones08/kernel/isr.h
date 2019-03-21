@@ -1,5 +1,5 @@
-#ifndef IRQ_H__
-#define IRQ_H__
+#ifndef ISR_H__
+#define ISR_H__
 
 #include <stdint.h>
 
@@ -20,4 +20,4 @@ isr_handler_t isr_sethandler(isr_t const isr, isr_handler_t const handler);
 void isr_enablebasic(int const irq_number);
 void isr_disablebasic(int const irq_number);
 
-#endif /* IRQ_H__ */
+#endif /* ISR_H__ */
