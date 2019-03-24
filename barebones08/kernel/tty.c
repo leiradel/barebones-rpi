@@ -46,41 +46,20 @@ int tty_canread(void) {
   return get_head() != get_tail();
 }
 
-ssize_t tty_read(void* const buf, size_t const count) {
-  uint8_t* chars = (uint8_t*)buf;
-
-  for (size_t i = 0; i < count; i++) {
-    while (!tty_canread()) {
-      // nothing
-    }
-
-    // There's data available in the receive ring buffer, return it.
-    uint32_t const tail     = get_tail();
-    uint8_t  const k        = s_readbuf[tail];
-    uint32_t const new_tail = (tail + 1) % RX_BUFFER_SIZE;
-    set_tail(new_tail);
-
-    if (k == '\3') {
-      // Control-C, return whatever is already in the buffer.
-      break;
-    }
-
-    *chars++ = k;
+char tty_read(void) {
+  while (!tty_canread()) {
+    // nothing
   }
 
-  return (ssize_t)(chars - (uint8_t*)buf);
+  // There's data available in the receive ring buffer, return it.
+  uint32_t const tail     = get_tail();
+  uint8_t  const k        = s_readbuf[tail];
+  uint32_t const new_tail = (tail + 1) % RX_BUFFER_SIZE;
+  set_tail(new_tail);
+
+  return (char)k;
 }
 
-ssize_t tty_write(const void* const buf, size_t const count) {
-  const uint8_t* chars = (const uint8_t*)buf;
-
-  for (size_t i = 0; i < count; i++) {
-    if (*chars == '\n') {
-      uart_write('\r', 0);
-    }
-
-    uart_write(*chars++, 0);
-  }
-
-  return (ssize_t)count;
+void tty_write(char const k) {
+  uart_write(k, 0);
 }

@@ -7,6 +7,7 @@ OBJCOPY = $(PREFIX)objcopy
 CPPFILT = $(PREFIX)c++filt
 
 RPI = ../rpi
+CRT0 = ../crt0
 LUA = lua-5.3.5/src
 
 CFLAGS  = -fsigned-char -ffreestanding -nostdinc \
@@ -42,7 +43,7 @@ endif
 %.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -c $< -o $@
 
-OBJS = syscalls.o crt0.o \
+OBJS = $(CRT0)/syscalls.o $(CRT0)/crt0.o \
        $(RPI)/memio.o \
        $(LUA)/lapi.o $(LUA)/lcode.o $(LUA)/lctype.o $(LUA)/ldebug.o \
        $(LUA)/ldo.o $(LUA)/ldump.o $(LUA)/lfunc.o $(LUA)/lgc.o $(LUA)/llex.o \

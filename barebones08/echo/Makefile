@@ -7,6 +7,7 @@ OBJCOPY = $(PREFIX)objcopy
 CPPFILT = $(PREFIX)c++filt
 
 RPI = ../rpi
+CRT0 = ../crt0
 
 CFLAGS  = -fsigned-char -ffreestanding -nostdinc \
           -std=c99 -Wall -pedantic -Werror \
@@ -41,7 +42,7 @@ endif
 %.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -c $< -o $@
 
-OBJS = main.o syscalls.o crt0.o $(RPI)/memio.o
+OBJS = main.o $(CRT0)/syscalls.o $(CRT0)/crt0.o
 
 all: $(TARGET).ihex
 

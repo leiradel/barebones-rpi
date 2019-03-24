@@ -1,4 +1,11 @@
 #include "syscalls.h"
+#include "tty.h"
+
+#include <setjmp.h>
+#include <signal.h>
+#include <stdint.h>
+
+jmp_buf g_exitaddr;
 
 static int sys_close(int file) {
   (void)file;
@@ -6,11 +13,7 @@ static int sys_close(int file) {
 }
 
 static void sys_exit(int rc) {
-  (void)rc;
-  // TODO: Exit to main.
-  while (1) {
-    // Nothing.
-  }
+  longjmp(g_exitaddr, rc);
 }
 
 static int sys_fstat(int file, struct stat* pstat) {
@@ -35,8 +38,10 @@ static int sys_isatty(int fd) {
 }
 
 static int sys_kill(int pid, int sig) {
-  (void)pid;
-  (void)sig;
+  if (pid == sys_getpid() && sig == SIGINT) {
+    longjmp(g_exitaddr, 130);
+  }
+
   return -1;
 }
 
@@ -59,9 +64,44 @@ static int sys_open(const char* filename, int flags, va_list args) {
 }
 
 static ssize_t sys_read(int fd, void* buf, size_t count) {
-  (void)fd;
-  (void)buf;
-  (void)count;
+  if (fd == STDIN_FILENO) {
+    uint8_t* chars = (uint8_t*)buf;
+
+    for (size_t i = 0; i < count; i++) {
+      uint8_t const k = tty_read();
+
+      if (k == 3) {
+        // Ctrl-C
+        tty_write('^');
+        tty_write('C');
+        tty_write('\r');
+        tty_write('\n');
+        sys_kill(sys_getpid(), SIGINT);
+      }
+
+      if (k == '\r') {
+        *chars++ = '\n';
+        tty_write('\r');
+        tty_write('\n');
+        break;
+      }
+      else if (k == '\b') {
+        if (chars > (uint8_t*)buf) {
+          chars--;
+          tty_write('\b');
+          tty_write(' ');
+          tty_write('\b');
+        }
+      }
+      else {
+        *chars++ = k;
+        tty_write(k);
+      }
+    }
+
+    return (ssize_t)(chars - (uint8_t*)buf);
+  }
+
   return -1;
 }
 
@@ -76,9 +116,20 @@ static int sys_unlink(const char* pathname) {
 }
 
 static ssize_t sys_write(int fd, const void* buf, size_t count) {
-  (void)fd;
-  (void)buf;
-  (void)count;
+  if (fd == STDOUT_FILENO || fd == STDERR_FILENO) {
+    const uint8_t* chars = (const uint8_t*)buf;
+
+    for (size_t i = 0; i < count; i++) {
+      if (*chars == '\n') {
+        tty_write('\r');
+      }
+
+      tty_write(*chars++);
+    }
+
+    return (ssize_t)count;
+  }
+
   return -1;
 }
 

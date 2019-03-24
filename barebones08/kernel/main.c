@@ -11,15 +11,16 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <string.h>
-
-static void writechar(char const k) {
-  tty_write(&k, 1);
-}
+#include <setjmp.h>
 
 static void writestr(const char* str) {
   while (*str != 0) {
-    writechar(*str++);
+    tty_write(*str++);
   }
+}
+
+static void writechar(char const k) {
+  tty_write(k);
 }
 
 static void writebyte(int const byte) {
@@ -61,9 +62,7 @@ static int readchar(void) {
     }
   }
 
-  uint8_t k;
-  tty_read(&k, 1);
-  return k;
+  return tty_read();
 }
 
 static void wait(void) {
@@ -80,8 +79,7 @@ static void skip(void) {
     led_set(us & (128 * 1024));
 
     if (tty_canread()) {
-      uint8_t k;
-      tty_read(&k, 1);
+      tty_read();
       timeout = us + 1000000;
     }
   }
@@ -252,69 +250,16 @@ static void undhandler(uint32_t const pc) {
   glod(GLOD_UNDEFINED);
 }
 
-static ssize_t sys_read(int fd, void* buf, size_t count) {
-  if (fd == STDIN_FILENO) {
-    uint8_t* chars = (uint8_t*)buf;
-
-    for (size_t i = 0; i < count; i++) {
-      while (!tty_canread()) {
-        // nothing
-      }
-
-      // There's data available in the receive ring buffer, return it.
-      uint8_t k;
-      ssize_t const numread = tty_read(&k, 1);
-
-      if (numread == 0) {
-        // If tty_canread returns 1 and tty_read returns 0, a Ctrl-C
-        // has been detected.
-        return 0;
-      }
-
-      if (k == '\r') {
-        *chars++ = '\n';
-        const uint8_t nl[] = "\r\n";
-        tty_write(nl, 2);
-        break;
-      }
-      else if (k == '\b') {
-        if (chars > (uint8_t*)buf) {
-          chars--;
-          uint8_t const bs[] = "\b \b";
-          tty_write(bs, 3);
-        }
-      }
-      else {
-        *chars++ = k;
-        tty_write(&k, 1);
-      }
-    }
-
-    return (ssize_t)(chars - (uint8_t*)buf);
-  }
-
-  return -1;
-}
-
-static ssize_t sys_write(int fd, const void* buf, size_t count) {
-  if (fd == STDOUT_FILENO || fd == STDERR_FILENO) {
-    return tty_write(buf, count);
-  }
-
-  return -1;
-}
-
 void main() {
   isr_sethandler(ISR_UNDEFINED, undhandler);
 
   tty_init();
 
-  extern syscalls_t g_syscalls;
-  g_syscalls.read = sys_read;
-  g_syscalls.write = sys_write;
-
   memrange_t const mem = prop_armmemory();
   uint32_t const sp = (mem.base + mem.size) & ~3;
+
+  extern jmp_buf g_exitaddr;
+  setjmp(g_exitaddr);
 
   while (1) {
     uint32_t const entry = load_ihex();
@@ -326,6 +271,7 @@ void main() {
       writedword(sp);
       writestr("\r\n");
 
+      extern syscalls_t g_syscalls;
       run_with_sp(entry, sp, (uint32_t)&g_syscalls);
     }
   }

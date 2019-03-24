@@ -27,7 +27,7 @@ SECTIONS {
   }
 
   . = ALIGN(16);
-  heap_start = .;
+  __heap_start = .;
 
   /DISCARD/ : {
     *(*)

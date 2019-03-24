@@ -6,7 +6,7 @@
 void tty_init(void);
 int  tty_canread(void);
 
-ssize_t tty_read(void* const buf, size_t const count);
-ssize_t tty_write(const void* const buf, size_t const count);
+char tty_read(void);
+void tty_write(char k);
 
 #endif /* TTY_H__ */
