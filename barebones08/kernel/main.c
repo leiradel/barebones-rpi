@@ -255,14 +255,14 @@ void main() {
 
   tty_init();
 
-  memrange_t const mem = prop_armmemory();
-  uint32_t const sp = (mem.base + mem.size) & ~3;
+  memrange_t volatile const mem = prop_armmemory();
+  uint32_t volatile const sp = (mem.base + mem.size) & ~3;
 
   extern jmp_buf g_exitaddr;
   setjmp(g_exitaddr);
 
   while (1) {
-    uint32_t const entry = load_ihex();
+    uint32_t volatile const entry = load_ihex();
 
     if (entry != 0) {
       writestr("Executing entry ");
