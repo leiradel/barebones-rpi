@@ -37,7 +37,10 @@ static isr_handler_t s_handlers[] = {
 };
 
 void isr_reshandler(void) {
-  s_handlers[ISR_RESET](0);
+  uint32_t lr;
+  __asm volatile("mov %[result], lr\n" : [result] "=r" (lr));
+
+  s_handlers[ISR_RESET](lr);
 }
 
 void __attribute__((isr("UND"))) isr_undhandler(void) {
