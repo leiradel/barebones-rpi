@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdint.h>
 
 static void writechar(uint8_t const k) {
@@ -28,9 +29,19 @@ static void writechar(uint8_t const k) {
   write(STDOUT_FILENO, nl, 2);
 }
 
+static void finish(void) {
+  static char const msg[] = "called finish registered with atexit\n";
+
+  for (size_t i = 0; i < sizeof(msg); i++) {
+    write(STDOUT_FILENO, msg + i, 1);
+  }
+}
+
 int main(int argc, const char* const argv[]) {
   (void)argc;
   (void)argv;
+
+  atexit(finish);
 
   while (1) {
     uint8_t k;
