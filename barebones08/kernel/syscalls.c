@@ -8,6 +8,39 @@
 
 jmp_buf g_exitaddr;
 
+static int sys_close(int file);
+static void sys_exit(int rc);
+static int sys_fstat(int file, struct stat* pstat);
+static int sys_getpid(void);
+static int sys_gettimeofday(struct timeval* tv, void* tz);
+static int sys_isatty(int fd);
+static int sys_kill(int pid, int sig);
+static int sys_link(const char* oldpath, const char* newpath);
+static off_t sys_lseek(int file, off_t offset, int whence);
+static int sys_open(const char* filename, int flags, va_list args);
+static ssize_t sys_read(int fd, void* buf, size_t count);
+static clock_t sys_times(struct tms* buffer);
+static int sys_unlink(const char* pathname);
+static ssize_t sys_write(int fd, const void* buf, size_t count);
+
+syscalls_t g_syscalls = {
+  sys_close,
+  sys_exit,
+  sys_fstat,
+  sys_getpid,
+  sys_gettimeofday,
+  sys_isatty,
+  sys_kill,
+  sys_link,
+  sys_lseek,
+  sys_open,
+  sys_read,
+  sys_times,
+  sys_unlink,
+  sys_write,
+  0
+};
+
 static int sys_close(int file) {
   (void)file;
   errno = EBADF;
@@ -15,7 +48,8 @@ static int sys_close(int file) {
 }
 
 static void sys_exit(int rc) {
-  longjmp(g_exitaddr, rc);
+  g_syscalls.retcode = rc;
+  longjmp(g_exitaddr, 1);
 }
 
 static int sys_fstat(int file, struct stat* pstat) {
@@ -44,7 +78,7 @@ static int sys_isatty(int fd) {
 
 static int sys_kill(int pid, int sig) {
   if (pid == sys_getpid() && sig == SIGINT) {
-    longjmp(g_exitaddr, 130);
+    sys_exit(130);
   }
 
   errno = EPERM;
@@ -147,20 +181,3 @@ static ssize_t sys_write(int fd, const void* buf, size_t count) {
   errno = EBADF;
   return -1;
 }
-
-syscalls_t g_syscalls = {
-  sys_close,
-  sys_exit,
-  sys_fstat,
-  sys_getpid,
-  sys_gettimeofday,
-  sys_isatty,
-  sys_kill,
-  sys_link,
-  sys_lseek,
-  sys_open,
-  sys_read,
-  sys_times,
-  sys_unlink,
-  sys_write
-};

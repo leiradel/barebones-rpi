@@ -244,14 +244,21 @@ error:
   }
 }
 
-static void undhandler(uint32_t const pc) {
+static void res_handler(uint32_t const pc) {
+  writestr("Reset at ");
+  writedword(pc);
+  glod(GLOD_RESET);
+}
+
+static void und_handler(uint32_t const pc) {
   writestr("Undefined instruction at ");
   writedword(pc);
   glod(GLOD_UNDEFINED);
 }
 
 void main() {
-  isr_sethandler(ISR_UNDEFINED, undhandler);
+  isr_sethandler(ISR_RESET, res_handler);
+  isr_sethandler(ISR_UNDEFINED, und_handler);
 
   tty_init();
 
@@ -259,20 +266,27 @@ void main() {
   uint32_t volatile const sp = (mem.base + mem.size) & ~3;
 
   extern jmp_buf g_exitaddr;
-  setjmp(g_exitaddr);
+  extern syscalls_t g_syscalls;
+  
+  if (setjmp(g_exitaddr) != 0) {
+  again:
+    writestr("Program exited with code ");
+    writedword(g_syscalls.retcode);
+    writestr("\r\n");
+  }
 
-  while (1) {
-    uint32_t volatile const entry = load_ihex();
+  uint32_t volatile const entry = load_ihex();
 
-    if (entry != 0) {
-      writestr("Executing entry ");
-      writedword(entry);
-      writestr(" with sp ");
-      writedword(sp);
-      writestr("\r\n");
+  if (entry != 0) {
+    writestr("Executing entry ");
+    writedword(entry);
+    writestr(" with sp ");
+    writedword(sp);
+    writestr("\r\n");
 
-      extern syscalls_t g_syscalls;
-      run_with_sp(entry, sp, (uint32_t)&g_syscalls);
-    }
+    run_with_sp(entry, sp, (uint32_t)&g_syscalls);
+
+    // crt0 will always call exit so this shouldn't be necessary.
+    goto again;
   }
 }

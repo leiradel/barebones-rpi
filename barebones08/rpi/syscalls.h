@@ -23,6 +23,8 @@ typedef struct {
   clock_t (*times)(struct tms* buffer);
   int     (*unlink)(const char* pathname);
   ssize_t (*write)(int fd, const void* buf, size_t count);
+
+  int retcode;
 }
 syscalls_t;
 
