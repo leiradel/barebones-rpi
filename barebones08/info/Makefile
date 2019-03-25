@@ -42,8 +42,10 @@ endif
 %.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -c $< -o $@
 
-OBJS = main.o $(CRT0)/syscalls.o $(CRT0)/crt0.o \
-       $(RPI)/board.o $(RPI)/mbox.o $(RPI)/memio.o $(RPI)/prop.o $(RPI)/timer.o
+OBJS = main.o \
+       $(CRT0)/syscalls.o $(CRT0)/crt0.o \
+       $(RPI)/board.o $(RPI)/gpio.o $(RPI)/led.o $(RPI)/mbox.o $(RPI)/memio.o \
+       $(RPI)/prop.o $(RPI)/timer.o
 
 all: $(TARGET).ihex
 

@@ -44,7 +44,8 @@ endif
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -c $< -o $@
 
 OBJS = $(CRT0)/syscalls.o $(CRT0)/crt0.o \
-       $(RPI)/memio.o \
+       $(RPI)/board.o $(RPI)/gpio.o $(RPI)/led.o $(RPI)/mbox.o $(RPI)/memio.o \
+       $(RPI)/prop.o $(RPI)/timer.o \
        $(LUA)/lapi.o $(LUA)/lcode.o $(LUA)/lctype.o $(LUA)/ldebug.o \
        $(LUA)/ldo.o $(LUA)/ldump.o $(LUA)/lfunc.o $(LUA)/lgc.o $(LUA)/llex.o \
        $(LUA)/lmem.o $(LUA)/lobject.o $(LUA)/lopcodes.o $(LUA)/lparser.o \
