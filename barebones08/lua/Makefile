@@ -14,7 +14,7 @@ CFLAGS  = -fsigned-char -ffreestanding -nostdinc \
           -std=c99 -Wall -pedantic -Werror \
           -I. -I$(RPI) -I../include/common -Ilua-5.3.5/src
 
-DEFINES = -DLUA_COMPAT_5_2 -DLUA_32BITS
+DEFINES = -DLUA_COMPAT_5_2
 LDFLAGS = -T link.T
 
 ifeq ($(strip $(v7)),1)
